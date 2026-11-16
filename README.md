@@ -1,5 +1,9 @@
 # 🃏 Laya Solitaire AI & Fine-Tuning Pipeline
 
+[English](README.md) | [한국어](README.ko.md) | [日本語](README.ja.md)
+
+---
+
 A Pygame-based Klondike Solitaire card game environment integrated with the **Laya Decision Model**, featuring real-time decision monitor visualization, automated gameplay log collection, LoRA fine-tuning, and a before/after benchmark evaluation pipeline.
 
 ---
@@ -35,8 +39,8 @@ Follow these steps to set up the project on a clean environment or machine:
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/YOUR_USERNAME/solitaire-bot.git
-cd solitaire-bot
+git clone https://github.com/nomdle/laya-solitaire.git
+cd laya-solitaire
 ```
 
 ### 2. Create and Activate a Virtual Environment
@@ -168,7 +172,9 @@ python game_engine.py --model ./checkpoint-laya-solitaire
 solitaire-bot/
 ├── .gitignore               # Ignores large checkpoints (*.safetensors, *.pt) and dataset files
 ├── requirements.txt         # Required Python packages
-├── README.md                # Documentation and replication guide
+├── README.md                # English main documentation
+├── README.ko.md             # Korean documentation
+├── README.ja.md             # Japanese documentation
 ├── task.md                  # Project specification document
 ├── game_engine.py           # Pygame 60FPS UI, Klondike rules engine, and action generator
 ├── laya_agent.py            # Laya SDK wrapper, LoRA inference, and heuristic fallback
