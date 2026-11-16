@@ -174,21 +174,21 @@ The following block diagram illustrates the closed-loop architecture connecting 
 ```mermaid
 flowchart TD
     subgraph Execution ["1. Game Execution & State Management (game_engine.py)"]
-        A[Pygame 60FPS UI Rendering] --> B[Extract State Context & Valid Options]
-        D[Card Bezier Animation & Board Update] --> A
-        J{Loop, Stall & Terminal Detector<br/>State Hash / Stall Counter}
+        A["Pygame 60FPS UI Rendering"] --> B["Extract State Context & Valid Options"]
+        D["Card Bezier Animation & Board Update"] --> A
+        J{"Loop, Stall & Terminal Detector<br/>State Hash / Stall Counter"}
         D --> J
     end
 
     subgraph Decision ["2. Decision Making Inference (laya_agent.py)"]
-        B -->|Context + Options| C[Laya Decision Model / LoRA Checkpoint]
-        C -->|Selected Best Action| D
+        B -->|"Context + Options"| C["Laya Decision Model / LoRA Checkpoint"]
+        C -->|"Selected Best Action"| D
     end
 
     subgraph Logging ["3. In-Memory Buffer & Quality Filter (data_logger.py)"]
-        C -.->|Turn-level Options & Target| K[(Temporary In-Memory Buffer)]
-        J -- "Progressive (Foundations ≥ 2 / Win)" --> F[(Commit to JSONL Dataset)]
-        J -- "Stalled / Infinite Loop" --> G[Discard Episode Buffer]
+        C -.->|"Turn-level Options & Target"| K[("Temporary In-Memory Buffer")]
+        J -- "Progressive (Foundations >= 2 / Win)" --> F[("Commit to JSONL Dataset")]
+        J -- "Stalled / Infinite Loop" --> G["Discard Episode Buffer"]
         K --> J
     end
 
@@ -196,7 +196,7 @@ flowchart TD
         F --> H["Data Preprocessing & Option Shuffling<br/>(train_laya.py)"]
         H --> I["New LoRA Checkpoint<br/>(checkpoint-laya-solitaire)"]
         I --> EVAL["Benchmark Evaluation<br/>(evaluate.py)"]
-        EVAL -.->|Deploy / Update Model| C
+        EVAL -.->|"Deploy / Update Model"| C
     end
 
     classDef exec fill:#1e293b,stroke:#38bdf8,color:#f8fafc

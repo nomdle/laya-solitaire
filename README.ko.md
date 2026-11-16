@@ -173,21 +173,21 @@ python game_engine.py --model ./checkpoint-laya-solitaire
 ```mermaid
 flowchart TD
     subgraph Execution ["1. 게임 실행 & 상태 관리 (game_engine.py)"]
-        A[Pygame 60FPS 화면 렌더링] --> B[State Context & 합법적 Options 추출]
-        D[카드 베지어 곡선 애니메이션 & 보드 갱신] --> A
-        J{루프·정체·종료 판정<br/>State Hash / 25턴 정체 카운터}
+        A["Pygame 60FPS 화면 렌더링"] --> B["State Context & 합법적 Options 추출"]
+        D["카드 베지어 곡선 애니메이션 & 보드 갱신"] --> A
+        J{"루프·정체·종료 판정<br/>State Hash / 25턴 정체 카운터"}
         D --> J
     end
 
     subgraph Decision ["2. 의사결정 추론 (laya_agent.py)"]
-        B -->|Context + Options| C[Laya 결정 모델 / LoRA 어댑터]
-        C -->|선택된 최적 행동| D
+        B -->|"Context + Options"| C["Laya 결정 모델 / LoRA 어댑터"]
+        C -->|"선택된 최적 행동"| D
     end
 
     subgraph Logging ["3. 메모리 버퍼 & 품질 필터 (data_logger.py)"]
-        C -.->|턴별 후보 및 정답| K[(메모리 버퍼에 임시 보관)]
-        J -- "진전 성공 (Foundations ≥ 2 / 승리)" --> F[(JSONL 데이터셋 영구 저장)]
-        J -- "정체 (Stall) / 무한 루프" --> G[에피소드 버퍼 폐기 (Discard)]
+        C -.->|"턴별 후보 및 정답"| K[("메모리 버퍼에 임시 보관")]
+        J -- "진전 성공 (Foundations >= 2 / 승리)" --> F[("JSONL 데이터셋 영구 저장")]
+        J -- "정체 (Stall) / 무한 루프" --> G["에피소드 버퍼 폐기 (Discard)"]
         K --> J
     end
 
@@ -195,7 +195,7 @@ flowchart TD
         F --> H["데이터 전처리 & 옵션 무작위 셔플<br/>(train_laya.py)"]
         H --> I["신규 LoRA 체크포인트<br/>(checkpoint-laya-solitaire)"]
         I --> EVAL["전/후 벤치마크 평가<br/>(evaluate.py)"]
-        EVAL -.->|실전 모델 적용| C
+        EVAL -.->|"실전 모델 적용"| C
     end
 
     classDef exec fill:#1e293b,stroke:#38bdf8,color:#f8fafc

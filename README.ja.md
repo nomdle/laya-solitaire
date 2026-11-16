@@ -174,21 +174,21 @@ python game_engine.py --model ./checkpoint-laya-solitaire
 ```mermaid
 flowchart TD
     subgraph Execution ["1. ゲーム実行 & 状態管理 (game_engine.py)"]
-        A[Pygame 画面描画] --> B[State Context & Options 抽出]
-        D[カード移動アニメーション & 盤面更新] --> A
-        J{ループ・停滞・終了判定<br/>State Hash / Stall Counter}
+        A["Pygame 画面描画"] --> B["State Context & Options 抽出"]
+        D["カード移動アニメーション & 盤面更新"] --> A
+        J{"ループ・停滞・終了判定<br/>State Hash / Stall Counter"}
         D --> J
     end
 
     subgraph Decision ["2. 意思決定推論 (laya_agent.py)"]
-        B -->|Context + Options| C[Laya Decision Model / LoRA]
-        C -->|Selected Action| D
+        B -->|"Context + Options"| C["Laya Decision Model / LoRA"]
+        C -->|"Selected Action"| D
     end
 
     subgraph Logging ["3. メモリバッファ & 品質フィルタ (data_logger.py)"]
-        C -.->|ターン別候補と選択| K[(メモリバッファに一時蓄積)]
-        J -- "進展あり (Foundations ≥ 2 / 勝利)" --> F[(JSONL データセット確定蓄積)]
-        J -- "停滞 (Stall) / 無限ループ" --> G[エピソード破棄 (Discard)]
+        C -.->|"ターン別候補と選択"| K[("メモリバッファに一時蓄積")]
+        J -- "進展あり (Foundations >= 2 / 勝利)" --> F[("JSONL データセット確定蓄積")]
+        J -- "停滞 (Stall) / 無限ループ" --> G["エピソード破棄 (Discard)"]
         K --> J
     end
 
@@ -196,7 +196,7 @@ flowchart TD
         F --> H["データ前処理 & 選択肢シャッフル<br/>(train_laya.py)"]
         H --> I["新 LoRA チェックポイント<br/>(checkpoint-laya-solitaire)"]
         I --> EVAL["事前・事後ベンチマーク評価<br/>(evaluate.py)"]
-        EVAL -.->|実戦投入| C
+        EVAL -.->|"実戦投入"| C
     end
 
     classDef exec fill:#1e293b,stroke:#38bdf8,color:#f8fafc
