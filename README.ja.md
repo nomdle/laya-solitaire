@@ -18,8 +18,9 @@ Python Pygameベースのソリティア（クロンダイク）カードゲー�
    - [ステップ3: LoRAファインチューニングの実行](#ステップ3-loraファインチューニングの実行)
    - [ステップ4: 事前・事後のベンチマーク性能評価](#ステップ4-事前事後のベンチマーク性能評価)
    - [ステップ5: ファインチューニング済みモデルでGUI実行](#ステップ5-ファインチューニング済みモデルでgui実行)
-5. [プロジェクト構成 (Project Structure)](#-プロジェクト構成-project-structure)
-6. [トラブルシューティング & FAQ (Troubleshooting)](#-トラブルシューティング--faq-troubleshooting)
+5. [システムアーキテクチャ (System Architecture)](#-システムアーキテクチャ-system-architecture)
+6. [プロジェクト構成 (Project Structure)](#-プロジェクト構成-project-structure)
+7. [トラブルシューティング & FAQ (Troubleshooting)](#-トラブルシューティング--faq-troubleshooting)
 
 ---
 
@@ -162,6 +163,51 @@ python evaluate.py --episodes 30 --checkpoint ./checkpoint-laya-solitaire
 学習したチェックポイントを読み込み、AIがリアルタイムに手を打つ様子を可視化画面で観察します：
 ```bash
 python game_engine.py --model ./checkpoint-laya-solitaire
+```
+
+---
+
+## 🏗️ システムアーキテクチャ (System Architecture)
+
+ゲーム実行、ニューラル意思決定推論、品質フィルタリングデータロギング、LoRA学習を有機的に結ぶ循環構造を示すブロック図です：
+
+```mermaid
+flowchart TD
+    subgraph Execution ["1. ゲーム実行 & 状態管理 (game_engine.py)"]
+        A[Pygame 画面描画] --> B[State Context & Options 抽出]
+        D[カード移動アニメーション & 盤面更新] --> A
+        J{ループ・停滞・終了判定<br/>State Hash / Stall Counter}
+        D --> J
+    end
+
+    subgraph Decision ["2. 意思決定推論 (laya_agent.py)"]
+        B -->|Context + Options| C[Laya Decision Model / LoRA]
+        C -->|Selected Action| D
+    end
+
+    subgraph Logging ["3. メモリバッファ & 品質フィルタ (data_logger.py)"]
+        C -.->|ターン別候補と選択| K[(メモリバッファに一時蓄積)]
+        J -- "進展あり (Foundations ≥ 2 / 勝利)" --> F[(JSONL データセット確定蓄積)]
+        J -- "停滞 (Stall) / 無限ループ" --> G[エピソード破棄 (Discard)]
+        K --> J
+    end
+
+    subgraph FineTuning ["4. LoRA ファインチューニング & 評価"]
+        F --> H["データ前処理 & 選択肢シャッフル<br/>(train_laya.py)"]
+        H --> I["新 LoRA チェックポイント<br/>(checkpoint-laya-solitaire)"]
+        I --> EVAL["事前・事後ベンチマーク評価<br/>(evaluate.py)"]
+        EVAL -.->|実戦投入| C
+    end
+
+    classDef exec fill:#1e293b,stroke:#38bdf8,color:#f8fafc
+    classDef dec fill:#0f172a,stroke:#4ade80,color:#f8fafc
+    classDef log fill:#1e1b4b,stroke:#a855f7,color:#f8fafc
+    classDef train fill:#312e81,stroke:#f43f5e,color:#f8fafc
+
+    class Execution exec
+    class Decision dec
+    class Logging log
+    class FineTuning train
 ```
 
 ---

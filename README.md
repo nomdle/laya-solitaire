@@ -18,8 +18,9 @@ A Pygame-based Klondike Solitaire card game environment integrated with the **La
    - [Step 3: LoRA Fine-Tuning](#step-3-lora-fine-tuning)
    - [Step 4: Benchmark Evaluation (Before vs. After)](#step-4-benchmark-evaluation-before-vs-after)
    - [Step 5: Run GUI with Fine-Tuned Model](#step-5-run-gui-with-fine-tuned-model)
-5. [Project Structure](#-project-structure)
-6. [Troubleshooting & FAQ](#-troubleshooting--faq)
+5. [System Architecture](#-system-architecture)
+6. [Project Structure](#-project-structure)
+7. [Troubleshooting & FAQ](#-troubleshooting--faq)
 
 ---
 
@@ -162,6 +163,51 @@ python evaluate.py --episodes 30 --checkpoint ./checkpoint-laya-solitaire
 Launch the Pygame interface to watch your fine-tuned model play in real time:
 ```bash
 python game_engine.py --model ./checkpoint-laya-solitaire
+```
+
+---
+
+## 🏗️ System Architecture
+
+The following block diagram illustrates the closed-loop architecture connecting gameplay execution, neural decision inference, quality-filtered logging, and LoRA fine-tuning:
+
+```mermaid
+flowchart TD
+    subgraph Execution ["1. Game Execution & State Management (game_engine.py)"]
+        A[Pygame 60FPS UI Rendering] --> B[Extract State Context & Valid Options]
+        D[Card Bezier Animation & Board Update] --> A
+        J{Loop, Stall & Terminal Detector<br/>State Hash / Stall Counter}
+        D --> J
+    end
+
+    subgraph Decision ["2. Decision Making Inference (laya_agent.py)"]
+        B -->|Context + Options| C[Laya Decision Model / LoRA Checkpoint]
+        C -->|Selected Best Action| D
+    end
+
+    subgraph Logging ["3. In-Memory Buffer & Quality Filter (data_logger.py)"]
+        C -.->|Turn-level Options & Target| K[(Temporary In-Memory Buffer)]
+        J -- "Progressive (Foundations ≥ 2 / Win)" --> F[(Commit to JSONL Dataset)]
+        J -- "Stalled / Infinite Loop" --> G[Discard Episode Buffer]
+        K --> J
+    end
+
+    subgraph FineTuning ["4. LoRA Fine-Tuning & Evaluation"]
+        F --> H["Data Preprocessing & Option Shuffling<br/>(train_laya.py)"]
+        H --> I["New LoRA Checkpoint<br/>(checkpoint-laya-solitaire)"]
+        I --> EVAL["Benchmark Evaluation<br/>(evaluate.py)"]
+        EVAL -.->|Deploy / Update Model| C
+    end
+
+    classDef exec fill:#1e293b,stroke:#38bdf8,color:#f8fafc
+    classDef dec fill:#0f172a,stroke:#4ade80,color:#f8fafc
+    classDef log fill:#1e1b4b,stroke:#a855f7,color:#f8fafc
+    classDef train fill:#312e81,stroke:#f43f5e,color:#f8fafc
+
+    class Execution exec
+    class Decision dec
+    class Logging log
+    class FineTuning train
 ```
 
 ---
